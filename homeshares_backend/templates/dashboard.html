@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8 animate-fade-in">
+  
+  <!-- Page Header -->
+  <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-4xl font-extrabold text-gray-900 flex items-center gap-2">
+        <span class="inline-block">📊</span> My Investments
+      </h1>
+      <p class="text-gray-500 mt-1">Track your property investments in one place</p>
+    </div>
+    <span class="text-sm text-gray-400">Last updated: {{ now|date:"M d, Y H:i" }}</span>
+  </header>
+
+  <!-- Filter Buttons -->
+  <div class="flex flex-wrap gap-3">
+    <a href="{% url 'properties:dashboard' %}?status=all"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm transition
+        {% if status == 'all' %}
+          bg-gradient-to-r from-green-600 to-green-500 text-white
+        {% else %}
+          bg-gray-100 hover:bg-gray-200 text-gray-700
+        {% endif %}">
+      ✅ All
+    </a>
+    <a href="{% url 'properties:dashboard' %}?status=pending"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm transition
+        {% if status == 'pending' %}
+          bg-gradient-to-r from-yellow-500 to-yellow-400 text-white
+        {% else %}
+          bg-gray-100 hover:bg-gray-200 text-gray-700
+        {% endif %}">
+      ⏳ Pending
+    </a>
+    <a href="{% url 'properties:dashboard' %}?status=distributed"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm transition
+        {% if status == 'distributed' %}
+          bg-gradient-to-r from-blue-600 to-blue-500 text-white
+        {% else %}
+          bg-gray-100 hover:bg-gray-200 text-gray-700
+        {% endif %}">
+      💸 Distributed
+    </a>
+  </div>
+
+  <!-- Investments Table Card -->
+  <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    
+    <!-- Table Header -->
+    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Investment Overview</h2>
+      <span class="text-sm text-gray-500">
+        {{ investments|length }} total investment{{ investments|length|pluralize }}
+      </span>
+    </div>
+
+    <!-- Table Content -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600 uppercase tracking-wider text-xs">
+          <tr>
+            <th class="px-6 py-3 text-left">🏡 Property</th>
+            <th class="px-6 py-3 text-right">💰 Amount (ETH)</th>
+            <th class="px-4 py-2 text-left">Currency</th>
+            <th class="px-6 py-3 text-left">🔗 Tx Hash</th>
+            <th class="px-6 py-3 text-center">📌 Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for inv in investments %}
+            <tr class="hover:bg-gray-50 transition-all duration-200">
+              <td class="px-6 py-4 font-medium text-gray-800">{{ inv.property.name }}</td>
+              <td class="px-6 py-4 text-right font-semibold text-gray-700">{{ inv.amount }}</td>
+              <td class="px-4 py-2">{{ inv.currency }}</td>
+              <td class="px-6 py-4">
+                <a href="#" class="text-blue-600 hover:underline font-mono">
+                  {{ inv.tx_hash|slice:":10" }}…
+                </a>
+              </td>
+              <td class="px-6 py-4 text-center">
+                {% if inv.distributed %}
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                    ✅ Distributed
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                    ⏳ Pending
+                  </span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <!-- Premium Empty State -->
+            <tr>
+              <td colspan="4" class="px-6 py-16 text-center">
+                <div class="flex flex-col items-center space-y-4">
+                  <div class="text-6xl">🚫</div>
+                  <h3 class="text-lg font-semibold text-gray-700">No investments yet</h3>
+                  <p class="text-sm text-gray-500">Your investments will appear here once you invest in a property.</p>
+                  <a href="{% url 'properties:list' %}" class="mt-2 px-5 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-md transition">
+                    Browse Properties
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Tailwind Animations -->
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
+  }
+</style>
+{% endblock %}

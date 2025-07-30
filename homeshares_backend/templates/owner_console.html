@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Owner Console</h1>
+
+  {% if toast %}
+    <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">{{ toast }}</div>
+  {% endif %}
+
+  <table class="min-w-full bg-white shadow rounded-lg">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2">Property</th>
+        <th class="px-4 py-2">Crowdfund Address</th>
+        <th class="px-4 py-2">Goal (ETH)</th>
+        <th class="px-4 py-2">Raised (ETH)</th>
+        <th class="px-4 py-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for prop in properties %}
+      <tr>
+        <td class="px-4 py-2">{{ prop.name }}</td>
+        <td class="px-4 py-2"><code>{{ prop.crowdfund_address }}</code></td>
+        <td class="px-4 py-2">{{ prop.goal }}</td>
+        <td class="px-4 py-2">{{ prop.raised }}</td>
+        <td class="px-4 py-2">
+          <a href="{% url 'properties:distribute_profits' prop.pk %}"
+             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Distribute Profits
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

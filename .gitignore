@@ -1,0 +1,50 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.env
+.env.*              # any other env files
+
+# Django
+*.log
+db.sqlite3
+/staticfiles/      # if you collectstatic locally
+/media/            # if you store uploads locally
+
+# Node/Hardhat
+node_modules/
+artifacts/
+cache/
+typechain/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Hardhat config outputs
+hardhat.config.ts.lock
+.solhintcache
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Misc
+*.bak
+*.swp
