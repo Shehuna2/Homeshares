@@ -8,50 +8,105 @@
   <h1 class="text-4xl font-extrabold text-center text-gray-900">
     🏡 Explore <span class="text-green-600">Available Properties</span>
   </h1>
-  <p class="text-center text-gray-500 max-w-2xl mx-auto">Invest in vetted real estate assets and earn MON-backed returns</p>
+  <p class="text-center text-gray-500 max-w-2xl mx-auto">
+    Invest in vetted real estate assets and earn MON-backed returns
+  </p>
 
   <!-- Property Grid -->
   <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
     {% for prop in properties %}
-    <div class="property-card bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 p-6 flex flex-col justify-between" 
-         data-address="{{ prop.crowdfund_address }}" data-abi='{{ cf_abi_json|safe }}'>
+    <div
+      class="property-card bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 p-6 flex flex-col justify-between"
+      data-address="{{ prop.crowdfund_address }}"
+      data-abi='{{ cf_abi_json|safe }}'
+    >
 
-      <!-- Property Header -->
+      <!-- Header -->
       <div>
         <h2 class="text-2xl font-bold text-gray-800">
-          {{ prop.name }} <span class="text-sm text-gray-400 font-normal">({{ prop.symbol }})</span>
+          {{ prop.name }}
+          <span class="text-sm text-gray-400 font-normal">({{ prop.symbol }})</span>
         </h2>
-        
+
         <!-- Goal & Raised -->
         <div class="mt-4 space-y-1 text-sm text-gray-700">
-          <p><strong>Goal:</strong> <span class="goal text-green-700 font-semibold">{{ prop.goal|floatformat:2 }}</span> MON</p>
-          <p><strong>Raised:</strong> <span class="raised text-blue-700 font-semibold">{{ prop.raised|default:"0"|floatformat:2 }}</span> / {{ prop.goal|floatformat:2 }} MON</p>
+          <p>
+            <strong>Goal:</strong>
+            <span class="goal text-green-700 font-semibold">
+              {{ prop.goal|floatformat:2 }}
+            </span> MON
+          </p>
+          <p>
+            <strong>Raised:</strong>
+            <span class="raised text-blue-700 font-semibold">
+              {{ prop.raised_amount|default:"0"|floatformat:2 }}
+            </span>
+            / {{ prop.goal|floatformat:2 }} MON
+          </p>
         </div>
 
         <!-- Progress Bar -->
-        {% with progress=prop.raised|default:0 %}{% widthratio progress prop.goal 100 as percent %}
-        <div class="mt-4 relative">
-          <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full" style="width: {{ percent }}%"></div>
+        {% with progress=prop.raised_amount|default:0 %}
+          {% widthratio progress prop.goal 100 as percent %}
+          <div class="mt-4 relative">
+            <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full progress-fill"
+                style="width: {{ percent }}%"
+              ></div>
+            </div>
+            <span
+              class="absolute -top-5 right-0 text-xs text-gray-500 font-medium progress-label"
+            >
+              {{ percent|floatformat:0 }}% Funded
+            </span>
           </div>
-          <span class="absolute -top-5 right-0 text-xs text-gray-500">{{ percent|floatformat:0 }}% Funded</span>
-        </div>
         {% endwith %}
       </div>
 
       <!-- Contribution Form -->
       <div class="mt-6 space-y-3">
-        <label for="amount-{{ forloop.counter }}" class="block text-sm font-medium text-gray-700">Amount (MON)</label>
-        <input id="amount-{{ forloop.counter }}" type="number" min="0.01" step="0.01" placeholder="e.g. 0.25"
-               class="input-amount w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500" />
+        <label
+          for="amount-{{ forloop.counter }}"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Amount (MON)
+        </label>
+        <input
+          id="amount-{{ forloop.counter }}"
+          type="number"
+          min="0.01"
+          step="0.01"
+          placeholder="e.g. 0.25"
+          class="input-amount w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
 
-        <button type="button" class="btn-contribute flex items-center justify-center bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition w-full"
-                data-input-id="amount-{{ forloop.counter }}"
-                data-address="{{ prop.crowdfund_address }}"
-                data-abi='{{ cf_abi_json|safe }}'>
-          <svg class="spinner hidden animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        <button
+          type="button"
+          class="btn-contribute flex items-center justify-center bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition w-full"
+          data-input-id="amount-{{ forloop.counter }}"
+          data-address="{{ prop.crowdfund_address }}"
+          data-abi='{{ cf_abi_json|safe }}'
+        >
+          <svg
+            class="spinner hidden animate-spin h-5 w-5 mr-2 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
           </svg>
           <span class="label">💸 Contribute</span>
         </button>
@@ -59,7 +114,9 @@
 
     </div>
     {% empty %}
-      <p class="text-center text-gray-500 col-span-full text-lg py-12">No properties available yet.</p>
+      <p class="text-center text-gray-500 col-span-full text-lg py-12">
+        No properties available yet.
+      </p>
     {% endfor %}
   </div>
 </div>
@@ -67,7 +124,42 @@
 
 {% block scripts %}
   {{ block.super }}
-  <!-- Ethers and Wallet JS -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="{% static 'js/wallet.js' %}"></script>
+
+  <script>
+    (function(){
+      const RPC      = "{{ monad_rpc_url }}";
+      const ABI      = JSON.parse(`{{ cf_abi_json|safe }}`);
+      const provider = new ethers.providers.JsonRpcProvider(RPC);
+
+      async function refreshFunding(){
+        document.querySelectorAll('.property-card').forEach(async card => {
+          try {
+            const cf        = new ethers.Contract(card.dataset.address, ABI, provider);
+            const raisedWei = await cf.raised();
+            const raisedMon = parseFloat(ethers.utils.formatEther(raisedWei));
+            const goal      = parseFloat(card.querySelector('.goal').textContent);
+
+            // Update the number
+            card.querySelector('.raised').textContent = raisedMon.toFixed(2);
+
+            // Recompute %
+            const pct = Math.min((raisedMon/goal)*100, 100).toFixed(0);
+
+            // Fill the bar
+            card.querySelector('.progress-fill').style.width = pct + '%';
+
+            // Update the label
+            card.querySelector('.progress-label').textContent = pct + '% Funded';
+          } catch(e){
+            console.error("refreshFunding error:", e);
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', ()=>{
+        refreshFunding();
+        setInterval(refreshFunding, 10000);
+      });
+    })();
+  </script>
 {% endblock %}

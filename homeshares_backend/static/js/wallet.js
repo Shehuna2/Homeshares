@@ -1,35 +1,31 @@
-// static/js/wallet.js
-
 // Show toast notification
 function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.remove('hidden');
-  setTimeout(() => toast.classList.add('hidden'), 4000);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 4000);
 }
 
-// Show modal for errors
-function showErrorModal(userMessage, debugMessage) {
+// Show error modal (user + debug)
+function showErrorModal(userMessage, debugMessage = '') {
   document.getElementById('errorModalMessage').textContent = userMessage;
   document.getElementById('errorModalDebug').textContent = debugMessage;
-  const modal = document.getElementById('errorModal');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
+  const m = document.getElementById('errorModal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
 }
 
-// Validate a positive amount
+// Simple positive-number validation
 function validateAmount(amount) {
-  const num = Number(amount);
-  if (isNaN(num) || num <= 0) {
-    throw new Error('Please enter a valid amount greater than zero.');
-  }
-  return num;
+  const n = Number(amount);
+  if (isNaN(n) || n <= 0) throw new Error('Please enter a valid amount greater than zero.');
+  return n;
 }
 
-// Connect MetaMask and return signer
+// Connect MetaMask and return a signer
 async function connectWallet() {
   if (!window.ethereum) {
-    showErrorModal('Please install MetaMask to continue!', 'No Ethereum provider found.');
+    showErrorModal('Please install MetaMask!', 'No Ethereum provider found.');
     throw new Error('No wallet detected');
   }
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -37,25 +33,22 @@ async function connectWallet() {
   return provider.getSigner();
 }
 
-// Main contribution handler (native MON only)
+// Contribution flow (native MON only)
 async function contribute(btn) {
+  let spinner, label;
   try {
-    // Locate input element
     const inputEl = document.getElementById(btn.dataset.inputId);
     if (!inputEl) throw new Error('Amount input not found');
-
-    // Validate amount
     const amount = validateAmount(inputEl.value);
 
-    // UI updates
+    // UI lock
     btn.disabled = true;
-    const spinner = btn.querySelector('.spinner');
-    const label   = btn.querySelector('.label');
-    if (spinner) spinner.classList.remove('hidden');
-    if (label)   label.classList.add('hidden');
-    showToast('⏳ Processing transaction...');
+    spinner = btn.querySelector('.spinner');
+    label   = btn.querySelector('.label');
+    spinner?.classList.remove('hidden');
+    label?.classList.add('hidden');
+    showToast('⏳ Processing transaction…');
 
-    // Blockchain interaction
     const signer = await connectWallet();
     const cf = new ethers.Contract(
       btn.dataset.address,
@@ -65,7 +58,7 @@ async function contribute(btn) {
     const tx = await cf.contribute({ value: ethers.utils.parseEther(amount.toString()) });
     await tx.wait();
 
-    showToast('✅ Contribution successful! Reloading...');
+    showToast('✅ Contribution successful! Reloading…');
     setTimeout(() => location.reload(), 1500);
 
   } catch (err) {
@@ -73,20 +66,21 @@ async function contribute(btn) {
     const rawMsg = err.error?.message || err.data?.message || err.message || 'Unknown error';
     let userMsg = '❌ Something went wrong. Please try again.';
     const m = rawMsg.toLowerCase();
-    if (m.includes('insufficient')) userMsg = '⚠️ Not enough funds for this transaction.';
-    else if (m.includes('user rejected') || m.includes('user denied')) userMsg = '🚫 Transaction canceled.';
-    else if (m.includes('execution reverted')) userMsg = '❌ Transaction failed on-chain.';
+    if (m.includes('insufficient'))       userMsg = '⚠️ Not enough funds.';
+    else if (m.includes('user rejected')  ||
+             m.includes('user denied'))    userMsg = '🚫 Transaction canceled.';
+    else if (m.includes('execution reverted')) userMsg = '❌ On-chain revert.';
 
     showErrorModal(userMsg, rawMsg);
 
-    // Restore UI
+    // restore UI
     btn.disabled = false;
-    if (spinner) spinner.classList.add('hidden');
-    if (label)   label.classList.remove('hidden');
+    spinner?.classList.add('hidden');
+    label?.classList.remove('hidden');
   }
 }
 
-// Attach handlers after DOM loaded
+// Bind to all buttons exactly once
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.btn-contribute').forEach(btn => {
     btn.addEventListener('click', () => contribute(btn));

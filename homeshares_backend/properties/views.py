@@ -53,22 +53,24 @@ def owner_console(request):
     return render(request, 'owner_console.html', {'properties': props, 'toast': toast})
 
 
+from django.db.models import Sum
+
 def properties_list(request):
-    props = Property.objects.all()
-    # Load the ABI
+    props = Property.objects.annotate(
+        raised_amount=Sum('investment__amount')
+    )
+
+    # Load ABI
     with open(settings.BASE_DIR / 'blockchain' / 'abi' / 'PropertyCrowdfund.json') as f:
         data = json.load(f)
-
-    # If data is a dict with an "abi" key, extract it; otherwise assume it's already the ABI list
-    if isinstance(data, dict) and 'abi' in data:
-        abi = data['abi']
-    else:
-        abi = data
+    abi = data.get('abi', data) if isinstance(data, dict) else data
 
     return render(request, 'properties_list.html', {
         'properties': props,
-        'cf_abi_json': json.dumps(abi)
+        'cf_abi_json': json.dumps(abi),
+        'monad_rpc_url':    os.getenv("MONAD_RPC_URL", ""),
     })
+
 
 @login_required
 def dashboard(request):

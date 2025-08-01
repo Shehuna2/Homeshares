@@ -70,10 +70,10 @@ class Command(BaseCommand):
                 continue
 
             # 5b. Batch-scan from start_block → latest_block
-            current = start_block
-            while current <= latest_block:
-                end = min(current + batch_size - 1, latest_block)
-                self.stdout.write(f"⏱ Scanning blocks {current} → {end}")
+            start = start_block
+            while start <= latest_block:
+                end = min(start + batch_size - 1, latest_block)
+                self.stdout.write(f"⏱ Scanning blocks {start} → {end}")
 
                 # Two-pass: native vs token contributions
                 for topic, handler_name in (
@@ -81,23 +81,24 @@ class Command(BaseCommand):
                     (token_topic,  "TokenContribution"),
                 ):
                     filter_params = {
-                        "address":  prop.crowdfund_address,
-                        "fromBlock": current,
+                        "address":   prop.crowdfund_address,
+                        "fromBlock": start,
                         "toBlock":   end,
-                        "topics":    [topic],
+                        "topics":    [native_topic],   # or [token_topic] in the second pass
                     }
+                    raw_logs = w3.eth.get_logs(filter_params)
                     try:
                         raw_logs = w3.eth.get_logs(filter_params)
                         self.stdout.write(f"  📝 {len(raw_logs)} logs for topic {handler_name}")
                     except (HTTPError, ReadTimeout) as e:
-                        self.stderr.write(f"  ⚠️ RPC timeout on {current}–{end}: {e}")
+                        self.stderr.write(f"  ⚠️ RPC timeout on {start}–{end}: {e}")
                         # reduce batch or skip
                         if batch_size > 1:
                             batch_size = max(1, batch_size // 2)
                             self.stdout.write(f"    ↘ New batch_size: {batch_size}")
                         else:
-                            self.stderr.write(f"    ↘ Skipping block {current}")
-                            current += 1
+                            self.stderr.write(f"    ↘ Skipping block {start}")
+                            start += 1
                         continue
                     except Exception as e:
                         self.stderr.write(f"  ❌ Error fetching logs: {e}")
@@ -158,6 +159,6 @@ class Command(BaseCommand):
                                 f"    ✅ Recorded {amount} {currency} by {user.username} (tx {tx_hash})"
                             )
 
-                current = end + 1
+                start = end + 1
 
         self.stdout.write("\n✅ listen_contributions run complete.")
