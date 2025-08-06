@@ -6,6 +6,10 @@ class Property(models.Model):
     symbol = models.CharField(max_length=50)
     crowdfund_address = models.CharField(max_length=42, unique=True)
     goal = models.DecimalField(max_digits=30, decimal_places=18)
+    closed         = models.BooleanField(default=False)
+    returns_pool   = models.DecimalField(max_digits=30, decimal_places=18, default=0)
+    distributed_per= models.DecimalField(max_digits=30, decimal_places=18, default=0)
+
 
     def __str__(self):
         return f"{self.name} ({self.symbol})"

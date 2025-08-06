@@ -1,49 +1,54 @@
-import json
 import os
-from web3 import Web3
+import json
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import redirect, render
+from django.contrib import messages
+from web3 import Web3
 from .models import Property, Investment
 
 def is_owner(user):
-    return user.is_superuser  # or your own owner check
+    return user.is_superuser
 
 @user_passes_test(is_owner)
 @login_required
 def distribute_profits(request, pk):
     prop = Property.objects.get(pk=pk)
 
-    # Connect to RPC
     rpc = os.getenv("MONAD_RPC_URL")
+    if not rpc:
+        messages.error(request, "⛔ MONAD_RPC_URL not set")
+        return redirect('properties:owner_console')
     w3 = Web3(Web3.HTTPProvider(rpc))
 
-    # Load ABI
+    priv = os.getenv("DEPLOYER_PRIVATE_KEY")
+    if not priv:
+        messages.error(request, "⛔ DEPLOYER_PRIVATE_KEY not set")
+        return redirect('properties:owner_console')
+    acct = w3.eth.account.from_key(priv)
+
+    # load ABI
     abi_path = settings.BASE_DIR / 'blockchain' / 'abi' / 'PropertyCrowdfund.json'
     with open(abi_path) as f:
         data = json.load(f)
     abi = data.get('abi', data) if isinstance(data, dict) else data
 
-    # Create contract and send tx
     cf = w3.eth.contract(address=prop.crowdfund_address, abi=abi)
-    acct = w3.eth.account.from_key(os.getenv("DEPLOYER_PRIVATE_KEY"))
     nonce = w3.eth.get_transaction_count(acct.address)
-
-    tx = cf.functions.distributeProfits().build_transaction({
+    tx = cf.functions.distributeProfit().build_transaction({
         'chainId': w3.eth.chain_id,
         'gas': 500_000,
         'gasPrice': w3.eth.gas_price,
         'nonce': nonce,
     })
     signed = acct.sign_transaction(tx)
-    tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
     w3.eth.wait_for_transaction_receipt(tx_hash)
 
-    # Mark all investments for this property as distributed
     Investment.objects.filter(property=prop, distributed=False).update(distributed=True)
-
-    request.session['toast'] = "✅ Profits distributed successfully!"
+    messages.success(request, "✅ Profits distributed successfully!")
     return redirect('properties:owner_console')
+
 
 @user_passes_test(is_owner)
 @login_required
@@ -91,8 +96,3 @@ def dashboard(request):
         'investments': investments,
         'status': status or 'all'
     })
-
-
-
-
-

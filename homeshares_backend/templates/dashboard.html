@@ -75,7 +75,7 @@
               <td class="px-6 py-4 text-right font-semibold text-gray-700">{{ inv.amount }}</td>
               <td class="px-4 py-2">{{ inv.currency }}</td>
               <td class="px-6 py-4">
-                <a href="#" class="text-blue-600 hover:underline font-mono">
+                <a href="https://testnet.monadexplorer.com/tx/{{inv.tx_hash}}/" class="text-blue-600 hover:underline font-mono">
                   {{ inv.tx_hash|slice:":10" }}…
                 </a>
               </td>

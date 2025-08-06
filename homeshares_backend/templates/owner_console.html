@@ -2,19 +2,24 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-8">
-  <h1 class="text-3xl font-bold mb-6">Owner Console</h1>
+  <h1 class="text-3xl font-bold mb-6">Admin Console</h1>
 
-  {% if toast %}
-    <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">{{ toast }}</div>
+  {% if messages %}
+    <div class="space-y-2">
+      {% for m in messages %}
+        <div class="p-4 rounded {{ m.tags }}">{{ m }}</div>
+      {% endfor %}
+    </div>
   {% endif %}
+
 
   <table class="min-w-full bg-white shadow rounded-lg">
     <thead class="bg-gray-100">
       <tr>
         <th class="px-4 py-2">Property</th>
         <th class="px-4 py-2">Crowdfund Address</th>
-        <th class="px-4 py-2">Goal (ETH)</th>
-        <th class="px-4 py-2">Raised (ETH)</th>
+        <th class="px-4 py-2">Goal (MON)</th>
+        <th class="px-4 py-2">Raised (MON)</th>
         <th class="px-4 py-2">Actions</th>
       </tr>
     </thead>
@@ -24,12 +29,18 @@
         <td class="px-4 py-2">{{ prop.name }}</td>
         <td class="px-4 py-2"><code>{{ prop.crowdfund_address }}</code></td>
         <td class="px-4 py-2">{{ prop.goal }}</td>
-        <td class="px-4 py-2">{{ prop.raised }}</td>
+        <td class="px-4 py-2">{{ prop.raised_amount }}</td>
         <td class="px-4 py-2">
-          <a href="{% url 'properties:distribute_profits' prop.pk %}"
-             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-            Distribute Profits
-          </a>
+          <!-- inside owner_console.html, per-row -->
+        <form method="post" action="{% url 'properties:distribute_profits' prop.pk %}">
+          {% csrf_token %}
+          <button
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            onclick="return confirm('Are you sure you want to distribute profits for {{ prop.symbol }}?');"
+          >
+            Distribute
+          </button>
+        </form>
         </td>
       </tr>
     {% endfor %}
